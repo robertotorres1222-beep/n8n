@@ -1121,10 +1121,10 @@ describe('dataStore filters', () => {
 					dataStoreId = id;
 
 					const rows = [
-						{ name: 'Task1', registeredAt: new Date('2023-12-31') },
-						{ name: 'Task2', registeredAt: new Date('2024-01-01') },
-						{ name: 'Task3', registeredAt: new Date('2024-01-02') },
-						{ name: 'Task4', registeredAt: new Date('2024-01-03') },
+						{ name: 'Task1', registeredAt: new Date('2023-12-31T23:59:59.999Z') },
+						{ name: 'Task2', registeredAt: new Date('2024-01-01T10:00:00.000Z') },
+						{ name: 'Task3', registeredAt: new Date('2024-01-02T00:00:00.000Z') },
+						{ name: 'Task4', registeredAt: new Date('2024-01-02T09:59:00.000Z') },
 					];
 
 					await dataStoreService.insertRows(dataStoreId, project.id, rows);
@@ -1132,7 +1132,7 @@ describe('dataStore filters', () => {
 
 				it("retrieves rows with 'greater than' date filter correctly", async () => {
 					// ACT
-					const baseDate = new Date('2024-01-01');
+					const baseDate = new Date('2024-01-01T12:00:00.000Z');
 					const result = await dataStoreService.getManyRowsAndCount(dataStoreId, project.id, {
 						filter: {
 							type: 'and',
@@ -1165,6 +1165,59 @@ describe('dataStore filters', () => {
 						expect.objectContaining({ name: 'Task2' }),
 						expect.objectContaining({ name: 'Task3' }),
 					]);
+				});
+
+				it('filters by system createdAt column correctly', async () => {
+					// ARRANGE
+					const inserted = await dataStoreService.insertRows(
+						dataStoreId,
+						project.id,
+						[{ name: 'TestRow' }],
+						'all',
+					);
+
+					const createdAtTimestamp = inserted[0].createdAt;
+
+					const midnight = new Date(createdAtTimestamp);
+					midnight.setHours(0, 0, 0, 0);
+
+					// ACT - Check the row is not returned if filtered before midnight
+					const beforeMidnightResult = await dataStoreService.getManyRowsAndCount(
+						dataStoreId,
+						project.id,
+						{
+							filter: {
+								type: 'and',
+								filters: [{ columnName: 'createdAt', value: createdAtTimestamp, condition: 'lt' }],
+							},
+						},
+					);
+
+					// ASSERT
+					expect(beforeMidnightResult.data.some((row) => row.name === 'TestRow')).toBe(false);
+
+					// ACT - Check the row is returned when using lte on the exact timestamp
+					const result = await dataStoreService.getManyRowsAndCount(dataStoreId, project.id, {
+						filter: {
+							type: 'and',
+							filters: [{ columnName: 'createdAt', value: createdAtTimestamp, condition: 'lte' }],
+						},
+					});
+
+					// ASSERT
+					expect(result.count).toBeGreaterThanOrEqual(1);
+					expect(result.data.some((row) => row.name === 'TestRow')).toBe(true);
+
+					// ACT -  - Check the row is returned when using lt on the exact timestamp
+					const resultLt = await dataStoreService.getManyRowsAndCount(dataStoreId, project.id, {
+						filter: {
+							type: 'and',
+							filters: [{ columnName: 'createdAt', value: createdAtTimestamp, condition: 'lt' }],
+						},
+					});
+
+					// ASSERT
+					expect(resultLt.data.some((row) => row.name === 'TestRow')).toBe(false);
 				});
 			});
 
