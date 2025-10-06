@@ -1188,7 +1188,7 @@ describe('dataStore filters', () => {
 						{
 							filter: {
 								type: 'and',
-								filters: [{ columnName: 'createdAt', value: createdAtTimestamp, condition: 'lt' }],
+								filters: [{ columnName: 'createdAt', value: midnight, condition: 'lt' }],
 							},
 						},
 					);
