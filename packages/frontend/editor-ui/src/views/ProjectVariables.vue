@@ -5,7 +5,6 @@ import { useMessage } from '@/composables/useMessage';
 import { useTelemetry } from '@/composables/useTelemetry';
 import { useToast } from '@/composables/useToast';
 import { useSettingsStore } from '@/stores/settings.store';
-import { useSourceControlStore } from '@/stores/sourceControl.store';
 import { useUIStore } from '@/stores/ui.store';
 import { useUsersStore } from '@/stores/users.store';
 import { computed, onMounted, ref, useTemplateRef } from 'vue';
@@ -41,6 +40,7 @@ import { useProjectsStore } from '@/stores/projects.store';
 import useEnvironmentsStore from '@/features/environments.ee/environments.store';
 import type { EnvironmentVariable } from '@/features/environments.ee/environments.types';
 import VariablesUsageBadge from '@/features/environments.ee/components/VariablesUsageBadge.vue';
+import { useSourceControlStore } from '@/features/sourceControl.ee/sourceControl.store';
 
 const settingsStore = useSettingsStore();
 const environmentsStore = useEnvironmentsStore();
