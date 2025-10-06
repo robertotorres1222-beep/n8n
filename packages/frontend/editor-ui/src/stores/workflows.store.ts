@@ -522,6 +522,9 @@ export const useWorkflowsStore = defineStore(STORES.WORKFLOWS, () => {
 						undefined,
 				};
 			},
+			getInstalledPackagesMap: () => {
+				return communityNodesStore.installedPackages;
+			},
 		} as unknown as INodeTypes;
 
 		return nodeTypes;
@@ -1446,8 +1449,7 @@ export const useWorkflowsStore = defineStore(STORES.WORKFLOWS, () => {
 				node_graph_string: JSON.stringify(
 					TelemetryHelpers.generateNodesGraph(
 						await workflowHelpers.getWorkflowDataToSave(),
-						workflowHelpers.getNodeTypes(),
-						communityNodesStore.installedPackages,
+						getNodeTypes(),
 						{
 							isCloudDeployment: settingsStore.isCloudDeployment,
 						},

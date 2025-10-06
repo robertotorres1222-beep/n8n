@@ -301,7 +301,6 @@ export function handleExecutionFinishedWithErrorOrCanceled(
 					TelemetryHelpers.generateNodesGraph(
 						workflowData as IWorkflowBase,
 						workflowHelpers.getNodeTypes(),
-						communityNodesStore.installedPackages,
 					).nodeGraph,
 				),
 				workflow_id: workflowsStore.workflowId,

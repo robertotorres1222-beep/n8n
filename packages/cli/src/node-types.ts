@@ -2,18 +2,22 @@ import { Service } from '@n8n/di';
 import type { NeededNodeType } from '@n8n/task-runner';
 import type { Dirent } from 'fs';
 import { readdir } from 'fs/promises';
-import { RoutingNode } from 'n8n-core';
 import type { ExecuteContext } from 'n8n-core';
+import { RoutingNode } from 'n8n-core';
 import type { INodeType, INodeTypeDescription, INodeTypes, IVersionedNodeType } from 'n8n-workflow';
 import { NodeHelpers, UnexpectedError, UserError } from 'n8n-workflow';
-import { join, dirname } from 'path';
+import { dirname, join } from 'path';
 
 import { LoadNodesAndCredentials } from './load-nodes-and-credentials';
 import { shouldAssignExecuteMethod } from './utils';
+import { CommunityPackagesService } from './modules/community-packages/community-packages.service';
 
 @Service()
 export class NodeTypes implements INodeTypes {
-	constructor(private readonly loadNodesAndCredentials: LoadNodesAndCredentials) {}
+	constructor(
+		private readonly loadNodesAndCredentials: LoadNodesAndCredentials,
+		private readonly communityPackagesService: CommunityPackagesService,
+	) {}
 
 	/**
 	 * Variant of `getByNameAndVersion` that includes the node's source path, used to locate a node's translations.
@@ -147,5 +151,9 @@ export class NodeTypes implements INodeTypes {
 
 			return descriptionCopy;
 		});
+	}
+
+	getInstalledPackagesMap() {
+		return this.communityPackagesService.fetchedPackages;
 	}
 }

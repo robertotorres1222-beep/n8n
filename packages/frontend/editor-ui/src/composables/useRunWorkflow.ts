@@ -546,7 +546,6 @@ export function useRunWorkflow(useRunWorkflowOpts: { router: ReturnType<typeof u
 					TelemetryHelpers.generateNodesGraph(
 						workflowData as IWorkflowBase,
 						workflowHelpers.getNodeTypes(),
-						communityNodesStore.installedPackages,
 						{ isCloudDeployment: settingsStore.isCloudDeployment },
 					).nodeGraph,
 				),

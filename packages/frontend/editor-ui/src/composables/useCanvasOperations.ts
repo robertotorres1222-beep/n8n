@@ -1965,7 +1965,6 @@ export function useCanvasOperations() {
 						TelemetryHelpers.generateNodesGraph(
 							workflowData as IWorkflowBase,
 							workflowHelpers.getNodeTypes(),
-							communityNodesStore.installedPackages,
 							{
 								nodeIdMap,
 								sourceInstanceId:

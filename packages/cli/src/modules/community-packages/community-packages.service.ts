@@ -5,7 +5,13 @@ import { Service } from '@n8n/di';
 import axios from 'axios';
 import type { PackageDirectoryLoader } from 'n8n-core';
 import { InstanceSettings } from 'n8n-core';
-import { jsonParse, UnexpectedError, UserError, type PublicInstalledPackage } from 'n8n-workflow';
+import {
+	CommunityPackageMap,
+	jsonParse,
+	UnexpectedError,
+	UserError,
+	type PublicInstalledPackage,
+} from 'n8n-workflow';
 import { exec } from 'node:child_process';
 import { access, constants, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -69,6 +75,8 @@ type PackageJson = {
 export class CommunityPackagesService {
 	missingPackages: string[] = [];
 
+	private packageMap: CommunityPackageMap = {};
+
 	private readonly downloadFolder = this.instanceSettings.nodesDownloadDir;
 
 	private readonly packageJsonPath = join(this.downloadFolder, 'package.json');
@@ -86,10 +94,23 @@ export class CommunityPackagesService {
 	async init() {
 		await this.ensurePackageJson();
 		await this.checkForMissingPackages();
+		this.packageMap = await this.getInstalledPackagesMap();
 	}
 
 	get hasMissingPackages() {
 		return this.missingPackages.length > 0;
+	}
+
+	get fetchedPackages() {
+		return this.packageMap;
+	}
+
+	private async getInstalledPackagesMap() {
+		const installedPackages = await this.getAllInstalledPackages();
+		return installedPackages.reduce<CommunityPackageMap>((acc, installedPackage) => {
+			acc[installedPackage.packageName] = installedPackage;
+			return acc;
+		}, {});
 	}
 
 	async findInstalledPackage(packageName: string) {
@@ -107,13 +128,18 @@ export class CommunityPackagesService {
 		return await this.installedPackageRepository.find({ relations: ['installedNodes'] });
 	}
 
-	private async removePackageFromDatabase(packageName: InstalledPackages) {
-		return await this.installedPackageRepository.remove(packageName);
+	private async removePackageFromDatabase(packageToRemove: InstalledPackages) {
+		const removed = await this.installedPackageRepository.remove(packageToRemove);
+		delete this.packageMap[packageToRemove.packageName];
+		return removed;
 	}
 
 	private async persistInstalledPackage(packageLoader: PackageDirectoryLoader) {
 		try {
-			return await this.installedPackageRepository.saveInstalledPackageWithNodes(packageLoader);
+			const installedPackage =
+				await this.installedPackageRepository.saveInstalledPackageWithNodes(packageLoader);
+			this.packageMap[installedPackage.packageName] = installedPackage;
+			return installedPackage;
 		} catch (maybeError) {
 			const error = toError(maybeError);
 
@@ -455,7 +481,10 @@ export class CommunityPackagesService {
 	async handleInstallEvent({
 		packageName,
 		packageVersion,
-	}: { packageName: string; packageVersion: string }) {
+	}: {
+		packageName: string;
+		packageVersion: string;
+	}) {
 		await this.installOrUpdateNpmPackage(packageName, packageVersion);
 	}
 

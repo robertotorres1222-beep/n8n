@@ -2323,6 +2323,7 @@ export interface INodeTypes {
 	getByName(nodeType: string): INodeType | IVersionedNodeType;
 	getByNameAndVersion(nodeType: string, version?: number): INodeType;
 	getKnownTypes(): IDataObject;
+	getInstalledPackagesMap(): CommunityPackageMap;
 }
 
 export type LoadingDetails = {

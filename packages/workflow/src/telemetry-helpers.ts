@@ -38,7 +38,6 @@ import type {
 	ITaskData,
 	IRun,
 	INodeParameterResourceLocator,
-	CommunityPackageMap,
 } from './interfaces';
 import { NodeConnectionTypes } from './interfaces';
 import { getNodeParameters } from './node-helpers';
@@ -170,7 +169,6 @@ function getNumberOfItemsInRuns(runs: ITaskData[]): number {
 export function generateNodesGraph(
 	workflow: Partial<IWorkflowBase>,
 	nodeTypes: INodeTypes,
-	installedNodes: CommunityPackageMap,
 	options?: {
 		sourceInstanceId?: string;
 		nodeIdMap?: { [curr: string]: string };
@@ -178,6 +176,7 @@ export function generateNodesGraph(
 		runData?: IRunData;
 	},
 ): INodesGraphResult {
+	const installedNodes = nodeTypes.getInstalledPackagesMap();
 	const { runData } = options ?? {};
 	const nodeGraph: INodesGraph = {
 		node_types: [],
