@@ -122,9 +122,10 @@ export function buildGetManyFilter(
 				// Convert ISO date strings to Date objects for date columns
 				if (columnType === 'date' && typeof value === 'string') {
 					const parsed = new Date(value);
-					if (!isNaN(parsed.getTime())) {
-						value = parsed;
+					if (isNaN(parsed.getTime())) {
+						throw new Error(`Invalid date string '${value}' for column '${x.keyName}'`);
 					}
+					value = parsed;
 				}
 				return {
 					columnName: x.keyName,

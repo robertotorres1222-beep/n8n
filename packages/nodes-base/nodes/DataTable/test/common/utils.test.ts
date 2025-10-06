@@ -414,5 +414,16 @@ describe('buildGetManyFilter', () => {
 			expect(result.filters[0].value).toBeInstanceOf(Date);
 			expect((result.filters[0].value as Date).toISOString()).toBe(dateString);
 		});
+
+		it('should throw an Error for invalid date strings', () => {
+			const invalidDateString = 'invalid-date';
+			const fieldEntries: FieldEntry[] = [
+				{ keyName: 'createdAt', condition: 'lte', keyValue: invalidDateString },
+			];
+
+			expect(() =>
+				buildGetManyFilter(fieldEntries, ALL_CONDITIONS, { createdAt: 'date' }),
+			).toThrowError(`Invalid date string '${invalidDateString}' for column 'createdAt'`);
+		});
 	});
 });
